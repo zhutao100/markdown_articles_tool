@@ -10,15 +10,14 @@ class ImageDownloader:
     "Smart" images downloader.
     """
 
-    def __init__(self, article_path: str, article_base_url: str = '', skip_list: Optional[List[str]] = None,
-                 skip_all_errors: bool = False, img_dir_name: str = 'images', img_public_path: str = '',
+    def __init__(self, images_dir: str, article_base_url: str = '', skip_list: Optional[List[str]] = None,
+                 skip_all_errors: bool = False, img_public_dir: str = '',
                  downloading_timeout: float = -1, deduplication: bool = False):
-        self._img_dir_name = img_dir_name
-        self._img_public_path = img_public_path
-        self._article_file_path = article_path
+        self._images_dir = images_dir
+        self._img_dir_name = os.path.basename(images_dir)
+        self._img_public_dir = img_public_dir
         self._article_base_url = article_base_url
         self._skip_list = set(skip_list) if skip_list is not None else []
-        self._images_dir = os.path.join(os.path.dirname(self._article_file_path), self._img_dir_name)
         self._skip_all_errors = skip_all_errors
         self._downloading_timeout = downloading_timeout if downloading_timeout > 0 else None
         self._deduplication = deduplication
@@ -36,7 +35,7 @@ class ImageDownloader:
         img_count = len(images)
         path_join = os.path.join
         img_dir_name = self._img_dir_name
-        img_public_path = self._img_public_path
+        img_public_dir = self._img_public_dir
         images_dir = self._images_dir
         deduplication = self._deduplication
 
@@ -81,17 +80,17 @@ class ImageDownloader:
                 existed_file_name = hash_to_path_mapping.get(new_content_hash)
                 if existed_file_name is not None:
                     img_filename = existed_file_name
-                    document_img_path = path_join(img_public_path or img_dir_name, img_filename)
+                    document_img_path = path_join(img_public_dir or img_dir_name, img_filename)
                     replacement_mapping.setdefault(img_url, document_img_path)
                     continue
                 else:
                     hash_to_path_mapping[new_content_hash] = img_filename
 
-            document_img_path = path_join(img_public_path or img_dir_name, img_filename)
+            document_img_path = path_join(img_public_dir or img_dir_name, img_filename)
             img_filename, document_img_path = self._correct_paths(replacement_mapping, document_img_path, img_url,
                                                                   img_filename)
 
-            real_img_path = path_join(images_dir, img_filename)
+            real_img_path = path_join(img_public_dir or images_dir, img_filename)
             replacement_mapping.setdefault(img_url, document_img_path)
 
             ImageDownloader._write_image(real_img_path, image_content)
@@ -118,7 +117,7 @@ class ImageDownloader:
         for url, path in replacement_mapping.items():
             if document_img_path == path and img_url != url:
                 img_filename = f'{hashlib.md5(img_url.encode()).hexdigest()}_{img_filename}'
-                document_img_path = os.path.join(self._img_public_path or self._img_dir_name, img_filename)
+                document_img_path = os.path.join(self._img_public_dir or self._img_dir_name, img_filename)
                 break
 
         return img_filename, document_img_path

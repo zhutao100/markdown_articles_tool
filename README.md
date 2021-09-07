@@ -18,7 +18,7 @@ Syntax:
 
 ```
 usage: markdown_tool.py [-h] [-s SKIP_LIST] [-d IMAGES_DIRNAME]
-                        [-p IMAGES_PUBLICPATH] [-a] [-t DOWNLOADING_TIMEOUT]
+                        [-p IMAGES_PUBLIC_DIR] [-a] [-t DOWNLOADING_TIMEOUT]
                         [-D] [-R] [-o {md,html,pdf}]
                         [--output-path OUTPUT_PATH] [--version]
                         article_file_path_or_url
@@ -37,7 +37,7 @@ optional arguments:
                         a leading '@')
   -d IMAGES_DIRNAME, --images-dirname IMAGES_DIRNAME
                         Folder in which to download images
-  -p IMAGES_PUBLICPATH, --images-publicpath IMAGES_PUBLICPATH
+  -p IMAGES_PUBLIC_DIR, --images-public-dir IMAGES_PUBLIC_DIR
                         Public path to the folder of downloaded images
   -a, --skip-all-incorrect
                         skip all incorrect images

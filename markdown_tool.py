@@ -48,11 +48,15 @@ def main(arguments):
     else:
         response = None
         article_path = os.path.expanduser(article_link)
-
-    skip_list = arguments.skip_list
-
     print(f'File "{article_path}" will be processed...')
 
+    formatter = [f for f in FORMATTERS if f is not None and f.format == arguments.output_format]
+    assert len(formatter) == 1
+    formatter = formatter[0]
+    article_file_name = os.path.splitext(article_path)[0]
+    article_output_path = arguments.output_path if arguments.output_path else f'{article_file_name}.{formatter.format}'
+
+    skip_list = arguments.skip_list
     if isinstance(skip_list, str):
         if skip_list.startswith('@'):
             skip_list = skip_list[1:]
@@ -62,33 +66,28 @@ def main(arguments):
         else:
             skip_list = [s.strip() for s in skip_list.split(',')]
 
+    images_dir = os.path.join(os.path.dirname(article_output_path), os.path.splitext(os.path.basename(article_path))[0]
+                              if arguments.use_article_name_as_images_dir else arguments.images_dirname)
     img_downloader = ImageDownloader(
-        article_path=article_path,
+        images_dir=images_dir,
         article_base_url=get_base_url(response),
         skip_list=skip_list,
         skip_all_errors=arguments.skip_all_incorrect,
-        img_dir_name=arguments.images_dirname,
-        img_public_path=arguments.images_publicpath,
+        img_public_dir=arguments.images_public_dir,
         downloading_timeout=arguments.downloading_timeout,
         deduplication=arguments.dedup_with_hash
     )
 
     result = ArticleTransformer(article_path, img_downloader, encoding=arguments.encoding).run()
 
-    formatter = [f for f in FORMATTERS if f is not None and f.format == arguments.output_format]
-    assert len(formatter) == 1
-    formatter = formatter[0]
+    if article_path == article_output_path and not arguments.remove_source:
+        article_output_path = f'{article_file_name}_{strftime("%Y%m%d_%H%M%S")}.{formatter.format}'
+    print(f'Writing file into "{article_output_path}"...')
 
-    article_file_name = os.path.splitext(article_path)[0]
-    article_out_path = arguments.output_path if arguments.output_path else f'{article_file_name}.{formatter.format}'
-    if article_path == article_out_path and not arguments.remove_source:
-        article_out_path = f'{article_file_name}_{strftime("%Y%m%d_%H%M%S")}.{formatter.format}'
-    print(f'Writing file into "{article_out_path}"...')
-
-    with open(article_out_path, 'wb') as outfile:
+    with open(article_output_path, 'wb') as outfile:
         outfile.write(formatter.write(result))
 
-    if arguments.remove_source and article_path != article_out_path:
+    if arguments.remove_source and article_path != article_output_path:
         print(f'Removing source file "{article_path}"...')
         os.remove(article_path)
 
@@ -105,9 +104,13 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--skip-list', default=None,
                         help='skip URL\'s from the comma-separated list (or file with a leading \'@\')')
     parser.add_argument('-d', '--images-dirname', default='images',
-                        help='Folder in which to download images')
-    parser.add_argument('-p', '--images-publicpath', default='',
-                        help='Public path to the folder of downloaded images')
+                        help='Relative directory name to the output path to store images')
+    parser.add_argument('--use-article-name-as-images-dir', default=False, action='store_true',
+                        help=('Use article file name as the folder name to store images, '
+                              'will override "--images-dir-name"'))
+    parser.add_argument('-p', '--images-public-dir', default='',
+                        help=('Absolute path to store all images, '
+                              'will override "--images-dirname" and "--use-article-name-as-images-dir"'))
     parser.add_argument('-a', '--skip-all-incorrect', default=False, action='store_true',
                         help='skip all incorrect images')
     parser.add_argument('-t', '--downloading-timeout', type=float, default=-1,
