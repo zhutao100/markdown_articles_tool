@@ -46,10 +46,10 @@ def main(arguments):
             article_file.write(response.content)
             article_file.close()
     else:
+        response = None
         article_path = os.path.expanduser(article_link)
 
     skip_list = arguments.skip_list
-    skip_all = arguments.skip_all_incorrect
 
     print(f'File "{article_path}" will be processed...')
 
@@ -66,14 +66,14 @@ def main(arguments):
         article_path=article_path,
         article_base_url=get_base_url(response),
         skip_list=skip_list,
-        skip_all_errors=skip_all,
+        skip_all_errors=arguments.skip_all_incorrect,
         img_dir_name=arguments.images_dirname,
         img_public_path=arguments.images_publicpath,
         downloading_timeout=arguments.downloading_timeout,
         deduplication=arguments.dedup_with_hash
     )
 
-    result = ArticleTransformer(article_path, img_downloader).run()
+    result = ArticleTransformer(article_path, img_downloader, encoding=arguments.encoding).run()
 
     formatter = [f for f in FORMATTERS if f is not None and f.format == arguments.output_format]
     assert len(formatter) == 1
@@ -101,6 +101,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('article_file_path_or_url', type=str,
                         help='path to the article file in the Markdown format')
+    parser.add_argument('--encoding', default=None, help='File encoding.')
     parser.add_argument('-s', '--skip-list', default=None,
                         help='skip URL\'s from the comma-separated list (or file with a leading \'@\')')
     parser.add_argument('-d', '--images-dirname', default='images',
