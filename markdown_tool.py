@@ -75,7 +75,8 @@ def main(arguments):
         skip_all_errors=arguments.skip_all_incorrect,
         img_public_dir=arguments.images_public_dir,
         downloading_timeout=arguments.downloading_timeout,
-        deduplication=arguments.dedup_with_hash
+        deduplication=arguments.dedup_with_hash,
+        skip_on_existing_filename=arguments.skip_on_existing_filename,
     )
 
     result = ArticleTransformer(article_path, img_downloader, encoding=arguments.encoding).run()
@@ -113,6 +114,8 @@ if __name__ == '__main__':
                               'will override "--images-dirname" and "--use-article-name-as-images-dir"'))
     parser.add_argument('-a', '--skip-all-incorrect', default=False, action='store_true',
                         help='skip all incorrect images')
+    parser.add_argument('--skip-on-existing-filename', default=False, action='store_true',
+                        help='skip on existing filename')
     parser.add_argument('-t', '--downloading-timeout', type=float, default=-1,
                         help='how many seconds to wait before downloading will be failed')
     parser.add_argument('-D', '--dedup-with-hash', default=False, action='store_true',

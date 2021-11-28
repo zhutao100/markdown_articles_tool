@@ -12,7 +12,7 @@ class ImageDownloader:
 
     def __init__(self, images_dir: str, article_base_url: str = '', skip_list: Optional[List[str]] = None,
                  skip_all_errors: bool = False, img_public_dir: str = '',
-                 downloading_timeout: float = -1, deduplication: bool = False):
+                 downloading_timeout: float = -1, deduplication: bool = False, skip_on_existing_filename: bool = False):
         self._images_dir = images_dir
         self._img_dir_name = os.path.basename(images_dir)
         self._img_public_dir = img_public_dir
@@ -21,6 +21,7 @@ class ImageDownloader:
         self._skip_all_errors = skip_all_errors
         self._downloading_timeout = downloading_timeout if downloading_timeout > 0 else None
         self._deduplication = deduplication
+        self._skip_on_existing_filename = skip_on_existing_filename
 
     def download_images(self, images: List[str]) -> dict:
         """
@@ -39,11 +40,7 @@ class ImageDownloader:
         images_dir = self._images_dir
         deduplication = self._deduplication
 
-        try:
-            os.makedirs(self._images_dir)
-        except FileExistsError:
-            # Existing directory is not error.
-            pass
+        os.makedirs(self._images_dir, exist_ok=True)
 
         for img_num, img_url in enumerate(images):
             assert img_url not in replacement_mapping.keys(), f'BUG: already downloaded image "{img_url}"...'
@@ -51,6 +48,12 @@ class ImageDownloader:
             if img_url in skip_list:
                 print(f'Image {img_num + 1} ["{img_url}"] was skipped, because it\'s in the skip list...')
                 continue
+
+            if self._skip_on_existing_filename:
+                potential_file_name = img_url.rsplit('/', 1)[1]
+                if os.path.isfile(os.path.join(self._images_dir, potential_file_name)):
+                    print(f'Image {img_num + 1} ["{img_url}"] is skipped since there is an existing file...')
+                    continue
 
             if not is_url(img_url):
                 print(f'Image {img_num + 1} ["{img_url}"] has incorrect URL...')

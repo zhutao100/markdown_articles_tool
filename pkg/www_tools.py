@@ -9,6 +9,11 @@ import os
 from mimetypes import guess_extension
 from .string_tools import slugify
 
+http_headers = {
+    'user-agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                   'AppleWebKit/537.36 (KHTML, like Gecko) '
+                   'Chrome/72.0.3626.96 Safari/537.36')}
+
 
 def is_url(url: str, allowed_url_prefixes=('http', 'ftp')) -> bool:
     """
@@ -30,7 +35,7 @@ def download_from_url(url: str, timeout=None):
     """
 
     try:
-        response = requests.get(url, allow_redirects=True, timeout=timeout)
+        response = requests.get(url, allow_redirects=True, timeout=timeout, headers=http_headers)
     except requests.exceptions.SSLError:
         print('Incorrect SSL certificate, trying to download without verifying...')
         response = requests.get(url, allow_redirects=True, verify=False,
