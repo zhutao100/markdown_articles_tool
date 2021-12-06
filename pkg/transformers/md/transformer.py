@@ -1,11 +1,11 @@
 """
 Images extractor from markdown document.
 """
-
 import markdown
-from markdown.treeprocessors import Treeprocessor
+import os
+
 from markdown.extensions import Extension
-from markdown.inlinepatterns import SimpleTagPattern
+from markdown.treeprocessors import Treeprocessor
 from typing import List
 
 
@@ -34,7 +34,7 @@ class ArticleTransformer:
     Markdown article transformation class.
     """
 
-    def __init__(self, article_path: str, image_downloader, encoding=None):
+    def __init__(self, article_path: os.PathLike, image_downloader, encoding=None):
         self._image_downloader = image_downloader
         self._article_file_path = article_path
         self._md_conv = markdown.Markdown(extensions=[ImgExtExtension(), 'md_in_html'])

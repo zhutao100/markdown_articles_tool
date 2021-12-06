@@ -1,8 +1,10 @@
-import os
 import hashlib
+import os
+
+from pathlib import Path
 from typing import Optional, List
 
-from .www_tools import is_url, get_filename_from_url, download_from_url
+from pkg.www_tools import is_url, get_filename_from_url, download_from_url
 
 
 class ImageDownloader:
@@ -10,12 +12,10 @@ class ImageDownloader:
     "Smart" images downloader.
     """
 
-    def __init__(self, images_dir: str, article_base_url: str = '', skip_list: Optional[List[str]] = None,
-                 skip_all_errors: bool = False, img_public_dir: str = '',
+    def __init__(self, images_dir: os.PathLike, article_base_url: str = '', skip_list: Optional[List[str]] = None,
+                 skip_all_errors: bool = False, img_public_dir: os.PathLike = '',
                  downloading_timeout: float = -1, deduplication: bool = False, skip_on_existing_filename: bool = False):
-        self._images_dir = images_dir
-        self._img_dir_name = os.path.basename(images_dir)
-        self._img_public_dir = img_public_dir
+        self._images_dir = Path(img_public_dir) if str(img_public_dir) else Path(images_dir)
         self._article_base_url = article_base_url
         self._skip_list = set(skip_list) if skip_list is not None else []
         self._skip_all_errors = skip_all_errors
@@ -34,9 +34,6 @@ class ImageDownloader:
         hash_to_path_mapping = {}
         skip_list = self._skip_list
         img_count = len(images)
-        path_join = os.path.join
-        img_dir_name = self._img_dir_name
-        img_public_dir = self._img_public_dir
         images_dir = self._images_dir
         deduplication = self._deduplication
 
@@ -50,10 +47,10 @@ class ImageDownloader:
                 continue
 
             if self._skip_on_existing_filename:
-                potential_file_name = img_url.rsplit('/', 1)[1]
-                real_img_path = os.path.join(images_dir, potential_file_name)
-                if os.path.isfile(real_img_path):
-                    document_img_path = path_join(img_public_dir or img_dir_name, potential_file_name)
+                potential_filename = img_url.rsplit('/', 1)[1]
+                real_img_path = images_dir.joinpath(potential_filename)
+                if real_img_path.is_file():
+                    document_img_path = os.path.join(images_dir.name, potential_filename)
                     replacement_mapping.setdefault(img_url, document_img_path)
                     print(f'Image {img_num + 1} ["{img_url}"] is skipped since there is an existing file...')
                     continue
@@ -86,17 +83,17 @@ class ImageDownloader:
                 existed_file_name = hash_to_path_mapping.get(new_content_hash)
                 if existed_file_name is not None:
                     img_filename = existed_file_name
-                    document_img_path = path_join(img_public_dir or img_dir_name, img_filename)
+                    document_img_path = os.path.join(images_dir.name, img_filename)
                     replacement_mapping.setdefault(img_url, document_img_path)
                     continue
                 else:
                     hash_to_path_mapping[new_content_hash] = img_filename
 
-            document_img_path = path_join(img_public_dir or img_dir_name, img_filename)
+            document_img_path = os.path.join(images_dir.name, img_filename)
             img_filename, document_img_path = self._correct_paths(replacement_mapping, document_img_path, img_url,
                                                                   img_filename)
 
-            real_img_path = path_join(img_public_dir or images_dir, img_filename)
+            real_img_path = images_dir.joinpath(img_filename)
             replacement_mapping.setdefault(img_url, document_img_path)
 
             ImageDownloader._write_image(real_img_path, image_content)
@@ -104,12 +101,12 @@ class ImageDownloader:
         return replacement_mapping
 
     @staticmethod
-    def _write_image(img_path: str, data: bytes):
+    def _write_image(img_path: os.PathLike, data: bytes):
         """
         Write image data into the file.
         """
 
-        print(f'Image will be written to the file "{img_path}"...')
+        print(f'Image will be written to the file "{str(img_path)}"...')
         with open(img_path, 'wb') as img_file:
             img_file.write(data)
             img_file.close()
@@ -119,11 +116,11 @@ class ImageDownloader:
         Fix path if a file with the similar name exists already.
         """
 
-        # Images can have similar name, but different URLs, but I want to save original filename, if possible.
+        # Images can have similar names but different URLs, here we'd like to save the original filenames if possible.
         for url, path in replacement_mapping.items():
             if document_img_path == path and img_url != url:
                 img_filename = f'{hashlib.md5(img_url.encode()).hexdigest()}_{img_filename}'
-                document_img_path = os.path.join(self._img_public_dir or self._img_dir_name, img_filename)
+                document_img_path = self._images_dir.joinpath(img_filename)
                 break
 
         return img_filename, document_img_path

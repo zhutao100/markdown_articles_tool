@@ -28,7 +28,7 @@ usage: markdown_tool.py [-h] [--version]
                         [-t DOWNLOADING_TIMEOUT]
                         [-D --dedup-with-hash]
                         [-R --remove-source]
-                        [-o {md,html,pdf}]
+                        [-O {md,html,pdf}]
                         [--output-path OUTPUT_PATH]
                         article_file_path_or_url
 
@@ -64,7 +64,7 @@ optional arguments:
   -D, --dedup-with-hash
                         Deduplicate images, using content hash
   -R, --remove-source   Remove or replace source file
-  -o {md,html}, --output-format {md,html}
+  -O {md,html}, --output-format {md,html}
                         output format
   --output-path OUTPUT_PATH
                         article output file name
