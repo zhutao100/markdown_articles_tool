@@ -40,7 +40,7 @@ class ImageDownloader:
         images_dir = self._images_dir
         deduplication = self._deduplication
 
-        os.makedirs(self._images_dir, exist_ok=True)
+        os.makedirs(images_dir, exist_ok=True)
 
         for img_num, img_url in enumerate(images):
             assert img_url not in replacement_mapping.keys(), f'BUG: already downloaded image "{img_url}"...'
@@ -51,7 +51,10 @@ class ImageDownloader:
 
             if self._skip_on_existing_filename:
                 potential_file_name = img_url.rsplit('/', 1)[1]
-                if os.path.isfile(os.path.join(self._images_dir, potential_file_name)):
+                real_img_path = os.path.join(images_dir, potential_file_name)
+                if os.path.isfile(real_img_path):
+                    document_img_path = path_join(img_public_dir or img_dir_name, potential_file_name)
+                    replacement_mapping.setdefault(img_url, document_img_path)
                     print(f'Image {img_num + 1} ["{img_url}"] is skipped since there is an existing file...')
                     continue
 
