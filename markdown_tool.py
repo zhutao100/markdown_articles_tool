@@ -106,7 +106,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('article_file_path_or_url', type=str,
                         help='path to the article file in the Markdown format')
-    parser.add_argument('--encoding', type=str, default=None, help='File encoding.')
+    parser.add_argument('--encoding', type=str, default='UTF-8', help='File encoding.')
     parser.add_argument('-s', '--skip-list', default=None,
                         help='skip URL\'s from the comma-separated list (or file with a leading \'@\')')
     parser.add_argument('-d', '--images-dirname', type=str, default='images',
