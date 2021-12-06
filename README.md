@@ -1,12 +1,11 @@
-![Python application](https://github.com/artiomn/markdown_images_downloader/workflows/Python%20application/badge.svg)
+# Markdown articles tool
 
-# Markdown articles tool 0.0.5
+Forked from https://github.com/artiomn/markdown_articles_tool.
 
-Tool can be used:
-
-- To download markdown article with images and replace image links.  
-  Find all links to images, download images and fix links in the document.
-  Similar images may be deduplicated by content hash.
+This tool can
+- Download markdown article with images and replace image links.  
+  - Find all links to images, download images and fix links in the document.
+  - Similar images may be deduplicated by content hash.
 - Convert Markdown documents to:
   * HTML.
   * PDF.
@@ -80,7 +79,7 @@ Example:
 Example 2:
 
 ```
-./markdown_tool.py not-nas/sov/article.md -o html -s "http://www.ossec.net/_images/ossec-arch.jpg" -a
+./markdown_tool.py not-nas/sov/article.md -O html -s "http://www.ossec.net/_images/ossec-arch.jpg" -a
 ```
 
 Example 3 (run on a folder):
@@ -89,7 +88,5 @@ Example 3 (run on a folder):
 find content/ -name "*.md" | xargs -n1 ./markdown_tool.py
 ```
 
-## Warning
-
-This tool will download only images, used Markdown syntax to link.
-Images, linked with HTML "\<img\>" tag will not be downloaded!
+## Notes
+- This tool will only download image links with native Markdown syntax, i.e. images linked with HTML "\<img\>" tags will not be downloaded.
