@@ -34,15 +34,18 @@ class ArticleTransformer:
     Markdown article transformation class.
     """
 
-    def __init__(self, article_path: os.PathLike, image_downloader, encoding=None):
+    def __init__(self,
+                 article_path: os.PathLike,
+                 image_downloader,
+                 encoding=None):
         self._image_downloader = image_downloader
-        self._article_file_path = article_path
+        self._article_path = article_path
         self._md_conv = markdown.Markdown(extensions=[ImgExtExtension(), 'md_in_html'])
         self._replacement_mapping = {}
         self._encoding = encoding
 
     def _read_article(self) -> List[str]:
-        with open(self._article_file_path, 'r', encoding=self._encoding) as m_file:
+        with open(self._article_path, 'r', encoding=self._encoding) as m_file:
             self._md_conv.convert(m_file.read())
 
         print(f'Images links count = {len(self._md_conv.images)}')
@@ -53,12 +56,11 @@ class ArticleTransformer:
 
     def _fix_document_urls(self) -> List[str]:
         print('Replacing images urls in the document...')
-        replacement_mapping = self._replacement_mapping
         lines = []
-        with open(self._article_file_path, 'r', encoding=self._encoding) as infile:
+        with open(self._article_path, 'r', encoding=self._encoding) as infile:
             for line in infile:
-                for src, target in replacement_mapping.items():
-                    line = line.replace(src, target)
+                for src, target in self._replacement_mapping.items():
+                    line = line.replace(src, target.as_posix().replace(' ', '%20'))
                 lines.append(line)
 
         return lines

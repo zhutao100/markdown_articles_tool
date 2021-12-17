@@ -56,8 +56,16 @@ def main(arguments):
     assert len(formatter) == 1
     formatter = formatter[0]
 
-    article_output_path = Path(arguments.output_path) if arguments.output_path else article_path.parent.joinpath(
-        f'{article_path.stem}.{formatter.format}')
+    article_output_stem = article_path.stem.replace(' ', '_')
+    article_output_path = None
+    if arguments.output_path:
+        article_output_path = Path(arguments.output_path)
+    else:
+        article_output_basename = f'{article_output_stem}.{formatter.format}'
+        article_output_path = article_path.parent.joinpath(article_output_basename)
+        if article_output_path.is_file() and not arguments.overwrite:
+            article_output_basename = f'{article_output_stem}_{strftime("%Y%m%d_%H%M%S")}.{formatter.format}'
+            article_output_path = article_path.parent.joinpath(article_output_basename)
 
     skip_list = arguments.skip_list
     if isinstance(skip_list, str):
@@ -69,27 +77,27 @@ def main(arguments):
         else:
             skip_list = [s.strip() for s in skip_list.split(',')]
 
-    images_dir = article_output_path.parent.joinpath(
-        article_path.stem if arguments.use_article_name_as_images_dir else arguments.images_dirname)
+    images_dir = None
+    if str(arguments.images_public_dir):
+        images_dir = Path(arguments.images_public_dir)
+    else:
+        images_dir = article_output_path.parent.joinpath(
+            article_output_stem if arguments.use_article_name_as_images_dir else arguments.images_dirname)
 
     img_downloader = ImageDownloader(
         images_dir=images_dir,
         article_base_url=get_base_url(response),
         skip_list=skip_list,
         skip_all_errors=arguments.skip_all_incorrect,
-        img_public_dir=arguments.images_public_dir,
         downloading_timeout=arguments.downloading_timeout,
         deduplication=arguments.dedup_with_hash,
         skip_on_existing_filename=arguments.skip_on_existing_filename,
+        overwrite=arguments.overwrite,
     )
 
     result = ArticleTransformer(article_path, img_downloader, encoding=arguments.encoding).run()
 
-    if article_output_path.is_file():
-        article_output_basename = f'{article_path.stem}_{strftime("%Y%m%d_%H%M%S")}.{formatter.format}'
-        article_output_path = article_path.parent.joinpath(article_output_basename)
     print(f'Writing file into "{str(article_output_path)}"...')
-
     with open(article_output_path, 'wb') as outfile:
         outfile.write(formatter.write(result))
 
@@ -116,7 +124,8 @@ if __name__ == '__main__':
                               'will override "--images-dir-name"'))
     parser.add_argument('-p', '--images-public-dir', type=str, default='',
                         help=('Absolute path to store all images, '
-                              'will override "--images-dirname" and "--use-article-name-as-images-dir"'))
+                              'will override "--images-dirname" and "--use-article-name-as-images-dir"; '
+                              'note that output file will still use relative paths in light of markdown portability.'))
     parser.add_argument('-a', '--skip-all-incorrect', default=False, action='store_true',
                         help='skip all incorrect images')
     parser.add_argument('--skip-on-existing-filename', default=False, action='store_true',
@@ -130,6 +139,8 @@ if __name__ == '__main__':
     parser.add_argument('-O', '--output-format', default=out_format_list[0], choices=out_format_list,
                         help='output format')
     parser.add_argument('--output-path', type=str, help='article output file name')
+    parser.add_argument('-f', '--overwrite', default=False, action='store_true',
+                        help='Overwrite existing files')
     parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}', help='return version number')
 
     args = parser.parse_args()
