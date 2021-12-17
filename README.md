@@ -92,4 +92,4 @@ find content/ -name "*.md" | xargs -n1 ./markdown_tool.py
 ```
 
 ## Notes
-- This tool will only download image links with native Markdown syntax, i.e. images linked with HTML "\<img\>" tags will not be downloaded.
+- This tool support image links in native Markdown syntax, and with HTML "\<img\>" tags.
