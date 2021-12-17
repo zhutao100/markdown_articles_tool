@@ -7,8 +7,8 @@ This tool can
   - Find all links to images, download images and fix links in the document.
   - Similar images may be deduplicated by content hash.
 - Convert Markdown documents to:
-  * HTML.
-  * PDF.
+  - HTML.
+  - PDF.
 
 
 ## Usage
@@ -16,19 +16,14 @@ This tool can
 Syntax:
 
 ```
-usage: markdown_tool.py [-h] [--version]
+usage: markdown_tool.py [-h] [-a] [-d IMAGES_DIRNAME] [-f] [-o OUTPUT_PATH]
+                        [-p IMAGES_PUBLIC_DIR] [-s SKIP_LIST]
+                        [-t DOWNLOADING_TIMEOUT] [-D]
+                        [-I {md,html,md+html,html+md}] [-O {md,html}] [-R]
                         [--encoding ENCODING]
-                        [-s SKIP_LIST] 
-                        [-d IMAGES_DIRNAME]
-                        [--use-article-name-as-images-dir]
-                        [-p IMAGES_PUBLIC_DIR]
-                        [-a --skip-all-incorrect] 
+                        [--output-postfix OUTPUT_POSTFIX]
                         [--skip-on-existing-filename]
-                        [-t DOWNLOADING_TIMEOUT]
-                        [-D --dedup-with-hash]
-                        [-R --remove-source]
-                        [-O {md,html,pdf}]
-                        [--output-path OUTPUT_PATH]
+                        [--use-article-name-as-images-dir] [--version]
                         article_file_path_or_url
 
 Simple script to download images and replace image links in markdown
@@ -40,37 +35,45 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --encoding ENCODING   File encoding.
-  -s SKIP_LIST, --skip-list SKIP_LIST
-                        skip URL's from the comma-separated list (or file with
-                        a leading '@')
+  -a, --skip-all-incorrect
+                        skip all incorrect images
   -d IMAGES_DIRNAME, --images-dirname IMAGES_DIRNAME
                         Relative directory name to the output path to store
                         images
-  --use-article-name-as-images-dir
-                        Use article file name as the folder name to store
-                        images, will override "--images-dir-name"
+  -f, --overwrite       Overwrite existing files
+  -o OUTPUT_PATH, --output-path OUTPUT_PATH
+                        specified article output file name; will override "--
+                        output-postfix"
   -p IMAGES_PUBLIC_DIR, --images-public-dir IMAGES_PUBLIC_DIR
-                        Absolute path to store all images, will override "--
-                        images-dirname" and "--use-article-name-as-images-dir"
-  -a, --skip-all-incorrect
-                        skip all incorrect images
-  --skip-on-existing-filename
-                        skip on existing filename
+                        Absolute path to store all images; will override "--
+                        images-dirname" and "--use-article-name-as-images-
+                        dir"; note that output file will still use relative
+                        paths in light of markdown portability.
+  -s SKIP_LIST, --skip-list SKIP_LIST
+                        skip URL's from the comma-separated list (or file with
+                        a leading '@')
   -t DOWNLOADING_TIMEOUT, --downloading-timeout DOWNLOADING_TIMEOUT
                         how many seconds to wait before downloading will be
                         failed
   -D, --dedup-with-hash
                         Deduplicate images, using content hash
-  -R, --remove-source   Remove or replace source file
+  -I {md,html,md+html,html+md}, --input-format {md,html,md+html,html+md}
+                        input format
   -O {md,html}, --output-format {md,html}
                         output format
-  --output-path OUTPUT_PATH
-                        article output file name
+  -R, --remove-source   Remove or replace source file
+  --encoding ENCODING   File encoding.
+  --output-postfix OUTPUT_POSTFIX
+                        postfix for article output file name
+  --skip-on-existing-filename
+                        skip on existing filename
+  --use-article-name-as-images-dir
+                        Use article file name as the folder name to store
+                        images, will override "--images-dir-name"
   --version             return version number
 ```
 
-Example:
+Example 1:
 
 ```
 ./markdown_tool.py nc-1-zfs/article.md

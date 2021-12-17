@@ -166,7 +166,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--overwrite', default=False, action='store_true',
                         help='Overwrite existing files')
     parser.add_argument('-o', '--output-path', type=str,
-                        help=('specified article output file name; ', 'will override "--output-postfix"'))
+                        help=('specified article output file name; '
+                              'will override "--output-postfix"'))
     parser.add_argument('-p', '--images-public-dir', type=str, default='',
                         help=('Absolute path to store all images; '
                               'will override "--images-dirname" and "--use-article-name-as-images-dir"; '
