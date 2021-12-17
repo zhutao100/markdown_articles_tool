@@ -2,11 +2,10 @@
 Images extractor from markdown document.
 """
 import markdown
-import os
 
 from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
-from typing import List
+from typing import List, TextIO, Set
 
 
 __all__ = ['ArticleTransformer']
@@ -33,20 +32,22 @@ class ArticleTransformer:
     """
     Markdown article transformation class.
     """
+    format = 'md'
 
     def __init__(self,
-                 article_path: os.PathLike,
+                 article_stream: TextIO,
                  image_downloader,
                  encoding=None):
         self._image_downloader = image_downloader
-        self._article_path = article_path
+        self._article_stream = article_stream
+        self._start_pos = self._article_stream.tell()
         self._md_conv = markdown.Markdown(extensions=[ImgExtExtension(), 'md_in_html'])
+        self._md_conv.images = []
         self._replacement_mapping = {}
         self._encoding = encoding
 
-    def _read_article(self) -> List[str]:
-        with open(self._article_path, 'r', encoding=self._encoding) as m_file:
-            self._md_conv.convert(m_file.read())
+    def _read_article(self) -> Set[str]:
+        self._md_conv.convert(self._article_stream.read())
 
         print(f'Images links count = {len(self._md_conv.images)}')
         images = set(self._md_conv.images)
@@ -57,11 +58,11 @@ class ArticleTransformer:
     def _fix_document_urls(self) -> List[str]:
         print('Replacing images urls in the document...')
         lines = []
-        with open(self._article_path, 'r', encoding=self._encoding) as infile:
-            for line in infile:
-                for src, target in self._replacement_mapping.items():
-                    line = line.replace(src, target.as_posix().replace(' ', '%20'))
-                lines.append(line)
+        self._article_stream.seek(self._start_pos)
+        for line in self._article_stream:
+            for src, target in self._replacement_mapping.items():
+                line = line.replace(src, target.as_posix().replace(' ', '%20'))
+            lines.append(line)
 
         return lines
 

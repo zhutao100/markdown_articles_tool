@@ -37,7 +37,7 @@ class ImageDownloader:
 
         :return URL -> file path mapping.
         """
-        os.makedirs(self._images_dir, exist_ok=True)
+        self._images_dir.mkdir(parents=True, exist_ok=True)
 
         replacement_mapping = {}
         hash_to_path_mapping = {}
@@ -57,7 +57,7 @@ class ImageDownloader:
                         replacement_mapping.setdefault(img_url, document_img_path)
                         print(f'Image {img_num + 1} ["{img_url}"] is skipped since there is an existing file...')
                         continue
-                except OSError as ose:
+                except OSError:
                     pass
 
             if not is_url(img_url):
