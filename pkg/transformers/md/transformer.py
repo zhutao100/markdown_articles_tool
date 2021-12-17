@@ -7,7 +7,6 @@ from markdown.extensions import Extension
 from markdown.treeprocessors import Treeprocessor
 from typing import List, TextIO, Set
 
-
 __all__ = ['ArticleTransformer']
 
 
@@ -32,23 +31,19 @@ class ArticleTransformer:
     """
     Markdown article transformation class.
     """
+
     format = 'md'
 
-    def __init__(self,
-                 article_stream: TextIO,
-                 image_downloader,
-                 encoding=None):
+    def __init__(self, article_stream: TextIO, image_downloader):
         self._image_downloader = image_downloader
         self._article_stream = article_stream
         self._start_pos = self._article_stream.tell()
         self._md_conv = markdown.Markdown(extensions=[ImgExtExtension(), 'md_in_html'])
         self._md_conv.images = []
         self._replacement_mapping = {}
-        self._encoding = encoding
 
     def _read_article(self) -> Set[str]:
         self._md_conv.convert(self._article_stream.read())
-
         print(f'Images links count = {len(self._md_conv.images)}')
         images = set(self._md_conv.images)
         print(f'Unique images links count = {len(images)}')

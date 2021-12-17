@@ -113,7 +113,7 @@ class ImageDownloader:
         Write image data into the file.
         """
 
-        print(f'Image is saved to "{str(img_path)}"...')
+        print(f'Image is saved to "{img_path}"...')
         with open(img_path, 'wb') as img_file:
             img_file.write(data)
             img_file.close()

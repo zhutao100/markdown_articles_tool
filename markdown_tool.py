@@ -27,8 +27,10 @@ except ModuleNotFoundError:
 
 
 __version__ = '0.0.7'
+
 TRANSFORMERS = [MarkdownArticleTransformer, HTMLArticleTransformer]
 FORMATTERS = [SimpleFormatter, HTMLFormatter, PDFFormatter]
+
 del types_map['.jpe']
 
 
@@ -67,7 +69,7 @@ def get_article_output_path(article_path: Path, explicit_output_path: Path,
         article_output_basename = f'{article_output_stem}{output_postfix}.{file_format}'
         article_output_path = article_path.parent.joinpath(article_output_basename)
         if article_output_path.is_file() and not remove_source:
-            article_output_basename = f'{article_output_stem}_{strftime("%Y%m%d_%H%M%S")}.{file_format}'
+            article_output_basename = f'{article_output_stem}{output_postfix}_{strftime("%Y%m%d_%H%M%S")}.{file_format}'
             article_output_path = article_path.parent.joinpath(article_output_basename)
 
     return article_output_path
@@ -118,7 +120,7 @@ def main(arguments):
         if skip_list.startswith('@'):
             skip_list = skip_list[1:]
             print(f'Reading skip list from a file "{skip_list}"...')
-            with open(Path(skip_list).expanduser(), 'r') as fsl:
+            with open(Path(skip_list).expanduser(), 'r', encoding=arguments.encoding) as fsl:
                 skip_list = [s.strip() for s in fsl.readlines()]
         else:
             skip_list = [s.strip() for s in skip_list.split(',')]
@@ -127,7 +129,8 @@ def main(arguments):
         images_dir = Path(arguments.images_public_dir)
     else:
         images_dir = article_output_path.parent.joinpath(
-            article_output_path.stem if arguments.use_article_name_as_images_dir else arguments.images_dirname)
+            article_path.stem.replace(' ', '_') if arguments.use_article_name_as_images_dir
+            else arguments.images_dirname)
 
     img_downloader = ImageDownloader(
         images_dir=images_dir,
